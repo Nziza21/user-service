@@ -16,15 +16,17 @@ require (
 	gorm.io/gorm v1.25.1
 )
 
+require github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
+
 require (
-	github.com/KyleBanks/depth v1.2.1 
-	github.com/PuerkitoBio/purell v1.1.1 
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 
-	github.com/bytedance/sonic v1.8.0 
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 
-	github.com/gin-contrib/sse v0.1.0 
-	github.com/go-openapi/jsonpointer v0.19.5 
-	github.com/go-openapi/jsonreference v0.19.6 
+	github.com/KyleBanks/depth v1.2.1
+	github.com/PuerkitoBio/purell v1.1.1
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+	github.com/bytedance/sonic v1.8.0
+	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
+	github.com/gin-contrib/sse v0.1.0
+	github.com/go-openapi/jsonpointer v0.19.5
+	github.com/go-openapi/jsonreference v0.19.6
 	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

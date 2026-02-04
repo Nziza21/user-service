@@ -16,9 +16,9 @@
 package main
 
 import (
-    "fmt"
+    
     "log"
-    stdhttp "net/http"
+    
     "strings"
 
     "github.com/Nziza21/user-service/internal/config"
@@ -36,7 +36,7 @@ import (
 
 var jwtSecret = []byte("mysecretpassword") 
 
-func AdminOnly() gin.HandlerFunc {
+func AdminOnlyGin() gin.HandlerFunc {
     return func(c *gin.Context) {
         authHeader := c.GetHeader("Authorization")
         if authHeader == "" {
@@ -49,6 +49,7 @@ func AdminOnly() gin.HandlerFunc {
         token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
             return jwtSecret, nil
         })
+        
         if err != nil || !token.Valid {
             c.JSON(401, gin.H{"error": "invalid token"})
             c.Abort()
@@ -81,15 +82,14 @@ func main() {
     r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
     v1 := r.Group("/api/v1/users")
-    {
-        v1.POST("", userHandler.CreateUser)
-        v1.GET("", AdminOnly(), userHandler.ListUsers)
-        v1.GET("/:id", userHandler.GetUserByID)
-        v1.PATCH("/:id", userHandler.UpdateUser)
-        v1.DELETE("/:id", AdminOnly(), userHandler.DeleteUser)
-    }
-
-    r.POST("/api/v1/auth/login", userHandler.Login)
+{
+    v1.POST("", userHandler.CreateUser)
+    v1.GET("", AdminOnlyGin(), userHandler.ListUsers)
+    v1.GET("/:id", userHandler.GetUserByID)
+    v1.PATCH("/:id", userHandler.UpdateUser)
+    v1.DELETE("/:id", AdminOnlyGin(), userHandler.DeleteUser)
+}
+r.POST("/api/v1/auth/login", userHandler.Login)
 
     log.Println("Starting server on port", cfg.Port)
     if err := r.Run(":" + cfg.Port); err != nil {
