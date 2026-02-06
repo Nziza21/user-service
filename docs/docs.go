@@ -12,7 +12,7 @@ const docTemplate = `{
         "contact": {
             "name": "Nziza Samuel",
             "url": "http://github.com/Nziza21",
-            "email": "nziza@example.com"
+            "email": "nzizataylor@gmail.com"
         },
         "license": {
             "name": "MIT",

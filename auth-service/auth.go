@@ -1,4 +1,4 @@
-package http
+package authservice
 
 type ErrorResponse struct {
     Error string `json:"error"`

@@ -102,3 +102,13 @@ func (r *UserRepository) GetByEmail(email string) (*domain.User, error) {
     }
     return &user, nil
 }
+
+func (r *UserRepository) UpdatePassword(email, hashedPassword string) error {
+    user := &domain.User{}
+    if err := r.db.Where("email = ?", email).First(user).Error; err != nil {
+        return err
+    }
+
+    user.PasswordHash = hashedPassword
+    return r.db.Save(user).Error
+}
