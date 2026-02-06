@@ -1,10 +1,22 @@
 package repository
 
 import (
+    "strings"
     "github.com/Nziza21/user-service/internal/domain"
     "github.com/google/uuid"
     "gorm.io/gorm"
 )
+
+type ListUsersOpts struct {
+    ID       string `form:"id"`
+    FullName string `form:"full_name"`
+    Email    string `form:"email"`
+    Phone    string `form:"phone"`
+    Role     string `form:"role"`
+    Status   string `form:"status"`
+    Page     int    `form:"page"`
+    Limit    int    `form:"limit"`
+}
 
 type UserRepository struct {
     db *gorm.DB
@@ -32,10 +44,55 @@ func (r *UserRepository) DeleteUser(user *domain.User) error {
     return r.db.Delete(user).Error
 }
 
-func (r *UserRepository) ListUsers() ([]domain.User, error) {
+func (r *UserRepository) ListUsers(opts ListUsersOpts) ([]domain.User, error) {
     var users []domain.User
-    result := r.db.Find(&users)
-    return users, result.Error
+    query := r.db.Model(&domain.User{})
+
+    if opts.ID != "" {
+        query = query.Where("id = ?", opts.ID)
+    }
+
+    if opts.FullName != "" {
+        name := strings.TrimSpace(opts.FullName)
+        query = query.Where("LOWER(full_name) LIKE ?", "%"+strings.ToLower(name)+"%")
+    }
+
+    if opts.Email != "" {
+        query = query.Where("email = ?", opts.Email)
+    }
+
+    if opts.Phone != "" {
+    phone := strings.TrimSpace(opts.Phone)
+    phone = strings.ReplaceAll(phone, "+", "")
+    phone = strings.ReplaceAll(phone, " ", "")
+    phone = strings.ReplaceAll(phone, "-", "")
+    phone = strings.ReplaceAll(phone, "(", "")
+    phone = strings.ReplaceAll(phone, ")", "")
+    query = query.Where("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, '+', ''), ' ', ''), '-', ''), '(', ''), ')', '') = ?", phone)
+    }
+
+    if opts.Role != "" {
+        query = query.Where("role = ?", opts.Role)
+    }
+
+    if opts.Status != "" {
+        query = query.Where("status = ?", opts.Status)
+    }
+
+    if opts.Limit == 0 {
+        opts.Limit = 10
+    }
+    if opts.Page == 0 {
+        opts.Page = 1
+    }
+    offset := (opts.Page - 1) * opts.Limit
+
+    err := query.
+        Limit(opts.Limit).
+        Offset(offset).
+        Find(&users).Error
+
+    return users, err
 }
 
 func (r *UserRepository) GetByEmail(email string) (*domain.User, error) {

@@ -41,7 +41,7 @@ Configure environment variables (.env file):
 
 DB_DSN=postgres://username:password@localhost:5432/user_service_db
 PORT=8800
-JWT_SECRET=mysecretpassword  # Must be the same as the one used in the app
+JWT_SECRET=mysecretpassword  
 
 Run the server:
 

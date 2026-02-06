@@ -1,21 +1,23 @@
 package http
 
 import (
-    "net/http"
+	"net/http"
+	"strconv"
 
-    "github.com/Nziza21/user-service/internal/domain"
-    "github.com/Nziza21/user-service/internal/service"
-    "github.com/gin-gonic/gin"
-    "github.com/google/uuid"
-    "github.com/golang-jwt/jwt/v4"
+	"github.com/Nziza21/user-service/internal/domain"
+	"github.com/Nziza21/user-service/internal/repository"
+	"github.com/Nziza21/user-service/internal/service"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type UserHandler struct {
-    userService *service.UserService
+	userService *service.UserService
 }
 
 func NewUserHandler(s *service.UserService) *UserHandler {
-    return &UserHandler{userService: s}
+	return &UserHandler{userService: s}
 }
 
 // CreateUser godoc
@@ -31,32 +33,32 @@ func NewUserHandler(s *service.UserService) *UserHandler {
 // @Failure 500 {object} http.ErrorResponse
 // @Router /api/v1/users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
-    var req struct {
-        FullName string `json:"fullName" binding:"required"`
-        Email    string `json:"email" binding:"required,email"`
-        Phone    string `json:"phone"`
-        Password string `json:"password" binding:"required"`
-        Role     string `json:"role"`
-    }
+	var req struct {
+		FullName string `json:"fullName" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+		Phone    string `json:"phone"`
+		Password string `json:"password" binding:"required"`
+		Role     string `json:"role"`
+	}
 
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    user := &domain.User{
-        FullName: req.FullName,
-        Email:    req.Email,
-        Phone:    req.Phone,
-        Role:     req.Role,
-    }
+	user := &domain.User{
+		FullName: req.FullName,
+		Email:    req.Email,
+		Phone:    req.Phone,
+		Role:     req.Role,
+	}
 
-    if err := h.userService.CreateUser(user, req.Password); err != nil {
-        c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	if err := h.userService.CreateUser(user, req.Password); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.IndentedJSON(http.StatusCreated, user)
+	c.IndentedJSON(http.StatusCreated, user)
 }
 
 // GetUserByID godoc
@@ -71,20 +73,20 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Failure 500 {object} http.ErrorResponse
 // @Router /api/v1/users/{id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
-    idParam := c.Param("id")
-    id, err := uuid.Parse(idParam)
-    if err != nil {
-        c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
-        return
-    }
+	idParam := c.Param("id")
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+		return
+	}
 
-    user, err := h.userService.GetUserByID(id)
-    if err != nil {
-        c.IndentedJSON(http.StatusNotFound, gin.H{"error": "user not found"})
-        return
-    }
+	user, err := h.userService.GetUserByID(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
 
-    c.IndentedJSON(http.StatusOK, user)
+	c.IndentedJSON(http.StatusOK, user)
 }
 
 // ListUsers godoc
@@ -99,13 +101,30 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 // @Router /api/v1/users [get]
 // @Security ApiKeyAuth
 func (h *UserHandler) ListUsers(c *gin.Context) {
-    users, err := h.userService.ListUsers()
-    if err != nil {
-        c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
+	opts := repository.ListUsersOpts{
+    ID:       c.Query("id"),
+    FullName: c.Query("full_name"),
+    Email:    c.Query("email"),
+    Phone:    c.Query("phone"),
+    Role:     c.Query("role"),
+    Status:   c.Query("status"),
     }
 
-    c.IndentedJSON(http.StatusOK, users)
+	// Pagination
+	if page := c.Query("page"); page != "" {
+		opts.Page, _ = strconv.Atoi(page)
+	}
+	if limit := c.Query("limit"); limit != "" {
+		opts.Limit, _ = strconv.Atoi(limit)
+	}
+
+	users, err := h.userService.ListUsers(opts)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, users)
 }
 
 // UpdateUser godoc
@@ -122,30 +141,30 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 // @Failure 500 {object} http.ErrorResponse
 // @Router /api/v1/users/{id} [patch]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
-    idParam := c.Param("id")
-    id, err := uuid.Parse(idParam)
-    if err != nil {
-        c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
-        return
-    }
+	idParam := c.Param("id")
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+		return
+	}
 
-    var req service.UpdateUserReq
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	var req service.UpdateUserReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    updatedUser, err := h.userService.UpdateUserByID(id, req)
-    if err != nil {
-        if err.Error() == "user not found" {
-            c.IndentedJSON(http.StatusNotFound, gin.H{"error": "user not found"})
-        } else {
-            c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        }
-        return
-    }
+	updatedUser, err := h.userService.UpdateUserByID(id, req)
+	if err != nil {
+		if err.Error() == "user not found" {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		} else {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
 
-    c.IndentedJSON(http.StatusOK, updatedUser)
+	c.IndentedJSON(http.StatusOK, updatedUser)
 }
 
 // DeleteUser godoc
@@ -154,23 +173,23 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 // @Tags Users
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} http.MessageResponse
+// @Success 200 {object} map[string]string
 // @Router /api/v1/users/{id} [delete]
 // @Security ApiKeyAuth
 func (h *UserHandler) DeleteUser(c *gin.Context) {
-    idParam := c.Param("id")
-    id, err := uuid.Parse(idParam)
-    if err != nil {
-        c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
-        return
-    }
+	idParam := c.Param("id")
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+		return
+	}
 
-    if err := h.userService.DeleteUserByID(id); err != nil {
-        c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	if err := h.userService.DeleteUserByID(id); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.IndentedJSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
 }
 
 // LoginUser godoc
@@ -185,11 +204,10 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 // @Failure 401 {object} http.ErrorResponse
 // @Router /api/v1/auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
-
 	var req struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required"`
+	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -208,5 +226,5 @@ func (h *UserHandler) Login(c *gin.Context) {
 	})
 	tokenString, _ := token.SignedString(jwtSecret)
 
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	c.IndentedJSON(http.StatusOK, gin.H{"token": tokenString})
 }

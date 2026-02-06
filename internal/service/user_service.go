@@ -61,8 +61,8 @@ func (s *UserService) DeleteUser(user *domain.User) error {
     return s.repo.DeleteUser(user)
 }
 
-func (s *UserService) ListUsers() ([]domain.User, error) {
-    return s.repo.ListUsers()
+func (s *UserService) ListUsers(opts repository.ListUsersOpts) ([]domain.User, error) {
+    return s.repo.ListUsers(opts)
 }
 
 func (s *UserService) DeleteUserByID(id uuid.UUID) error {

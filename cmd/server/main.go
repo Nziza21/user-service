@@ -11,7 +11,7 @@
 // @license.url   https://opensource.org/licenses/MIT
 
 // @host      localhost:8800
-// @BasePath  /api/v1/users
+// @BasePath 
 
 package main
 
