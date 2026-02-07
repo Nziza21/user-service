@@ -24,7 +24,6 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Println(".env file not found, relying on OS environment variables")
@@ -32,7 +31,7 @@ func LoadConfig() *Config {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8800"
 	}
 
 	dbDSN := os.Getenv("DB_DSN")
@@ -41,23 +40,24 @@ func LoadConfig() *Config {
 	}
 
 	smtpPort := 2525
-if p := os.Getenv("SMTP_PORT"); p != "" {
-    if parsed, err := strconv.Atoi(p); err == nil {
-        smtpPort = parsed
-    }
-}
+	if p := os.Getenv("SMTP_PORT"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil {
+			smtpPort = parsed
+		}
+	}
 
 	smtpConfig := &SMTPConfig{
-    Host:     os.Getenv("SMTP_HOST"),
-    Port:     smtpPort,
-    Username: os.Getenv("SMTP_USERNAME"),
-    Password: os.Getenv("SMTP_PASSWORD"),
-    TLS:      true,
-    From:     os.Getenv("SMTP_FROM"),
-}
+		Host:     os.Getenv("SMTP_HOST"),
+		Port:     smtpPort,
+		Username: os.Getenv("SMTP_USERNAME"),
+		Password: os.Getenv("SMTP_PASSWORD"),
+		TLS:      true,
+		From:     os.Getenv("SMTP_FROM"),
+	}
 
 	return &Config{
-    Port:       port,
-    DB_DSN:     dbDSN,
-    SMTPConfig: smtpConfig,
-}
+		Port:       port,
+		DB_DSN:     dbDSN,
+		SMTPConfig: smtpConfig,
+	}
+} 

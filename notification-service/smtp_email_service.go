@@ -3,7 +3,6 @@ package notificationservice
 import (
 	"fmt"
 	"net/smtp"
-	"os"
 )
 
 type SMTPEmailService struct {
@@ -14,20 +13,20 @@ type SMTPEmailService struct {
 	from     string
 }
 
+// NewSMTPEmailService initializes the Mailtrap SMTP client
 func NewSMTPEmailService() *SMTPEmailService {
-	username := os.Getenv("GMAIL_USERNAME")
-	password := os.Getenv("GMAIL_APP_PASSWORD")
-
-	if username == "" || password == "" {
-		panic("GMAIL_USERNAME or GMAIL_APP_PASSWORD not set in environment")
-	}
+	username := "<smtp@mailtrap.io>" 
+	password := "<41c92c339184eb9fc7a6b6dbf6add059>" 
+	host := "live.smtp.mailtrap.io"
+	port := "587"
+	from := "hello@nzizasamuel.com"
 
 	return &SMTPEmailService{
 		username: username,
 		password: password,
-		host:     "smtp.gmail.com",
-		port:     "587",
-		from:     username,
+		host:     host,
+		port:     port,
+		from:     from,
 	}
 }
 
@@ -35,12 +34,13 @@ func (s *SMTPEmailService) SendEmail(to, subject, body string) error {
 	auth := smtp.PlainAuth("", s.username, s.password, s.host)
 
 	msg := []byte(fmt.Sprintf(
-		"To: %s\r\n"+
+		"From: %s\r\n"+
+			"To: %s\r\n"+
 			"Subject: %s\r\n"+
 			"MIME-Version: 1.0\r\n"+
 			"Content-Type: text/plain; charset=\"utf-8\"\r\n"+
 			"\r\n%s",
-		to, subject, body,
+		s.from, to, subject, body,
 	))
 
 	addr := s.host + ":" + s.port
@@ -55,6 +55,9 @@ func (s *SMTPEmailService) SendEmail(to, subject, body string) error {
 
 func (s *SMTPEmailService) SendOTPEmail(to, otp string) error {
 	subject := "Password Reset OTP"
-	body := fmt.Sprintf("Hello,\n\nYour OTP is %s. It expires in 5 minutes.\n\nBest,\nUser Service Team", otp)
+	body := fmt.Sprintf(
+		"Hello,\n\nYour OTP is %s. It expires in 5 minutes.\n\nBest,\nUser Service Team",
+		otp,
+	)
 	return s.SendEmail(to, subject, body)
 }

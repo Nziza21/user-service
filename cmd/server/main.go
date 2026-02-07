@@ -1,21 +1,22 @@
 package main
 
 import (
-    "log"
-    "strings"
+	"log"
+	"strings"
 
-    "github.com/Nziza21/user-service/internal/cache"
-    "github.com/Nziza21/user-service/internal/config"
-    "github.com/Nziza21/user-service/internal/db"
-    myhttp "github.com/Nziza21/user-service/internal/http"
-    "github.com/Nziza21/user-service/internal/repository"
-    "github.com/Nziza21/user-service/internal/service"
+	"github.com/Nziza21/user-service/internal/cache"
+	"github.com/Nziza21/user-service/internal/config"
+	"github.com/Nziza21/user-service/internal/db"
+	myhttp "github.com/Nziza21/user-service/internal/http"
+	"github.com/Nziza21/user-service/internal/repository"
+	"github.com/Nziza21/user-service/internal/service"
+	notificationservice "github.com/Nziza21/user-service/notification-service"
 
-    "github.com/gin-gonic/gin"
-    "github.com/golang-jwt/jwt/v4"
-    ginSwagger "github.com/swaggo/gin-swagger"
-    swaggerFiles "github.com/swaggo/files"
-    _ "github.com/Nziza21/user-service/docs"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	swaggerFiles "github.com/swaggo/files"
+	_ "github.com/Nziza21/user-service/docs"
 )
 
 var jwtSecret = []byte("mysecretpassword")
@@ -66,8 +67,9 @@ func main() {
     userService := service.NewUserService(userRepo)
     userHandler := myhttp.NewUserHandler(userService)
     authService := service.NewAuthService(userRepo, redisClient)
-    emailService := service.NewSMTPEmailService()
+    emailService := notificationservice.NewSMTPEmailService()
     authHandler := myhttp.NewAuthHandler(authService, emailService)
+
 
 
     // Gin router

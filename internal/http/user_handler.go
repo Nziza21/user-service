@@ -12,6 +12,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+var jwtSecret = []byte("mysecretpassword")
+
 type UserHandler struct {
 	userService *service.UserService
 }
@@ -94,12 +96,21 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 // @Description Retrieve a list of all users (admin only)
 // @Tags Users
 // @Produce json
+// @Param id query string false "Filter by user ID"
+// @Param full_name query string false "Filter by full name"
+// @Param email query string false "Filter by email"
+// @Param phone query string false "Filter by phone"
+// @Param role query string false "Filter by role"
+// @Param status query string false "Filter by status"
+// @Param page query int false "Page number"
+// @Param limit query int false "Page size limit"
 // @Success 200 {array} domain.User
 // @Failure 400 {object} http.ErrorResponse
 // @Failure 404 {object} http.ErrorResponse
 // @Failure 500 {object} http.ErrorResponse
-// @Router /api/v1/users [get]
 // @Security ApiKeyAuth
+// @Router /api/v1/users [get]
+
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	opts := repository.ListUsersOpts{
     ID:       c.Query("id"),
@@ -110,7 +121,6 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
     Status:   c.Query("status"),
     }
 
-	// Pagination
 	if page := c.Query("page"); page != "" {
 		opts.Page, _ = strconv.Atoi(page)
 	}

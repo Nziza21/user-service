@@ -1,22 +1,23 @@
-package authservice
+package http
 
 import (
 	"log"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-
-	"yourmodule/auth-service/service"          // AuthService
-	"yourmodule/notification-service"         // Notification Service
+	"github.com/Nziza21/user-service/internal/service"
+	notificationservice "github.com/Nziza21/user-service/notification-service"
 )
 
 type AuthHandler struct {
 	authService  *service.AuthService
-	emailService *notificationservice.SMTPEmailService // <- use notification service
+	emailService *notificationservice.SMTPEmailService
 }
 
-func NewAuthHandler(authService *service.AuthService, emailService *notificationservice.SMTPEmailService) *AuthHandler {
+func NewAuthHandler(
+	authService *service.AuthService,
+	emailService *notificationservice.SMTPEmailService,
+) *AuthHandler {
 	return &AuthHandler{
 		authService:  authService,
 		emailService: emailService,
@@ -27,6 +28,7 @@ func (h *AuthHandler) RequestResetPassword(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
 	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -40,12 +42,12 @@ func (h *AuthHandler) RequestResetPassword(c *gin.Context) {
 	}
 
 	if err := h.emailService.SendOTPEmail(req.Email, otp); err != nil {
-		log.Println("Error sending OTP email:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send OTP email"})
+		log.Println("email error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send OTP"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "OTP sent to your email"})
+	c.JSON(http.StatusOK, gin.H{"message": "OTP sent to email"})
 }
 
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
@@ -54,6 +56,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		OTP         string `json:"otp" binding:"required"`
 		NewPassword string `json:"new_password" binding:"required"`
 	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -70,18 +73,18 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "password hashing failed"})
 		return
 	}
 
-	user.PasswordHash = string(hashedPassword)
+	user.PasswordHash = string(hash)
 
 	if err := h.authService.UserRepo.UpdateUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update password"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "password update failed"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "password reset successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "password reset successful"})
 }

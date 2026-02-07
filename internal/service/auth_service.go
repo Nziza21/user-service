@@ -1,10 +1,11 @@
-package authservice
+package service
 
 import (
     "fmt"
     "math/rand"
     "time"
     "golang.org/x/crypto/bcrypt"
+
     "github.com/Nziza21/user-service/internal/cache"
     "github.com/Nziza21/user-service/internal/repository"
 )
