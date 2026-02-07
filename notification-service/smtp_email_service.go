@@ -13,7 +13,6 @@ type SMTPEmailService struct {
 	from     string
 }
 
-// NewSMTPEmailService initializes the Mailtrap SMTP client
 func NewSMTPEmailService() *SMTPEmailService {
 	username := "<smtp@mailtrap.io>" 
 	password := "<41c92c339184eb9fc7a6b6dbf6add059>" 
