@@ -42,10 +42,11 @@ func (h *AuthHandler) RequestResetPassword(c *gin.Context) {
 	}
 
 	if err := h.emailService.SendOTPEmail(req.Email, otp); err != nil {
-		log.Println("email error:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send OTP"})
-		return
-	}
+	log.Println("email error:", err)
+	c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send OTP"})
+	return
+    }
+
 
 	c.JSON(http.StatusOK, gin.H{"message": "OTP sent to email"})
 }

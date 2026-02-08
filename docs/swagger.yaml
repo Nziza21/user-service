@@ -1,4 +1,3 @@
-basePath: /api/v1/users
 definitions:
   domain.User:
     properties:
@@ -30,40 +29,115 @@ definitions:
     - email
     - fullName
     type: object
-  http.ErrorResponse:
+  http.CreateUserRequest:
     properties:
-      error:
+      email:
         type: string
+      fullName:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+    required:
+    - email
+    - fullName
+    - password
     type: object
-  http.MessageResponse:
+  http.LoginRequest:
     properties:
-      message:
+      email:
         type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
     type: object
-  service.UpdateUserReq:
+  http.UpdateProfileRequest:
     properties:
       fullName:
         type: string
       phone:
         type: string
     type: object
-host: localhost:8800
 info:
-  contact:
-    email: nziza@example.com
-    name: Nziza Samuel
-    url: http://github.com/Nziza21
-  description: This is a user management service API.
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  termsOfService: http://example.com/terms/
-  title: User Service API
-  version: "1.0"
+  contact: {}
 paths:
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with email and password, returns JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/http.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+      tags:
+      - Auth
   /api/v1/users:
     get:
       description: Retrieve a list of all users (admin only)
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: id
+        type: string
+      - description: Filter by full name
+        in: query
+        name: full_name
+        type: string
+      - description: Filter by email
+        in: query
+        name: email
+        type: string
+      - description: Filter by phone
+        in: query
+        name: phone
+        type: string
+      - description: Filter by role
+        in: query
+        name: role
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size limit
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -76,15 +150,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - ApiKeyAuth: []
       summary: List all users
@@ -100,7 +174,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/domain.User'
+          $ref: '#/definitions/http.CreateUserRequest'
       produces:
       - application/json
       responses:
@@ -111,15 +185,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       summary: Create a new user
       tags:
       - Users
@@ -138,7 +212,21 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.MessageResponse'
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       security:
       - ApiKeyAuth: []
       summary: Delete a user
@@ -162,15 +250,21 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       summary: Get a user by ID
       tags:
       - Users
@@ -189,7 +283,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/service.UpdateUserReq'
+          $ref: '#/definitions/http.UpdateProfileRequest'
       produces:
       - application/json
       responses:
@@ -200,15 +294,21 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       summary: Update a user
       tags:
       - Users

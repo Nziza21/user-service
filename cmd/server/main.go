@@ -10,7 +10,7 @@ import (
 	myhttp "github.com/Nziza21/user-service/internal/http"
 	"github.com/Nziza21/user-service/internal/repository"
 	"github.com/Nziza21/user-service/internal/service"
-	notificationservice "github.com/Nziza21/user-service/notification-service"
+	"github.com/Nziza21/user-service/notification-service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -69,8 +69,6 @@ func main() {
     authService := service.NewAuthService(userRepo, redisClient)
     emailService := notificationservice.NewSMTPEmailService()
     authHandler := myhttp.NewAuthHandler(authService, emailService)
-
-
 
     // Gin router
     r := gin.Default()

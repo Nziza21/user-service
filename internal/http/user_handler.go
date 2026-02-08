@@ -8,8 +8,8 @@ import (
 	"github.com/Nziza21/user-service/internal/repository"
 	"github.com/Nziza21/user-service/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 )
 
 var jwtSecret = []byte("mysecretpassword")
@@ -18,6 +18,7 @@ type UserHandler struct {
 	userService *service.UserService
 }
 
+// Constructor
 func NewUserHandler(s *service.UserService) *UserHandler {
 	return &UserHandler{userService: s}
 }
@@ -28,21 +29,13 @@ func NewUserHandler(s *service.UserService) *UserHandler {
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param user body domain.User true "User Data"
+// @Param user body http.CreateUserRequest true "User Data"
 // @Success 201 {object} domain.User
-// @Failure 400 {object} http.ErrorResponse
-// @Failure 404 {object} http.ErrorResponse
-// @Failure 500 {object} http.ErrorResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /api/v1/users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	var req struct {
-		FullName string `json:"fullName" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
-		Phone    string `json:"phone"`
-		Password string `json:"password" binding:"required"`
-		Role     string `json:"role"`
-	}
-
+	var req CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -70,9 +63,9 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Produce json
 // @Param id path string true "User ID"
 // @Success 200 {object} domain.User
-// @Failure 400 {object} http.ErrorResponse
-// @Failure 404 {object} http.ErrorResponse
-// @Failure 500 {object} http.ErrorResponse
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /api/v1/users/{id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	idParam := c.Param("id")
@@ -105,21 +98,19 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 // @Param page query int false "Page number"
 // @Param limit query int false "Page size limit"
 // @Success 200 {array} domain.User
-// @Failure 400 {object} http.ErrorResponse
-// @Failure 404 {object} http.ErrorResponse
-// @Failure 500 {object} http.ErrorResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Security ApiKeyAuth
 // @Router /api/v1/users [get]
-
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	opts := repository.ListUsersOpts{
-    ID:       c.Query("id"),
-    FullName: c.Query("full_name"),
-    Email:    c.Query("email"),
-    Phone:    c.Query("phone"),
-    Role:     c.Query("role"),
-    Status:   c.Query("status"),
-    }
+		ID:       c.Query("id"),
+		FullName: c.Query("full_name"),
+		Email:    c.Query("email"),
+		Phone:    c.Query("phone"),
+		Role:     c.Query("role"),
+		Status:   c.Query("status"),
+	}
 
 	if page := c.Query("page"); page != "" {
 		opts.Page, _ = strconv.Atoi(page)
@@ -144,11 +135,11 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "User ID"
-// @Param user body service.UpdateUserReq true "Updated User Data"
+// @Param user body http.UpdateProfileRequest true "Updated User Data"
 // @Success 200 {object} domain.User
-// @Failure 400 {object} http.ErrorResponse
-// @Failure 404 {object} http.ErrorResponse
-// @Failure 500 {object} http.ErrorResponse
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /api/v1/users/{id} [patch]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	idParam := c.Param("id")
@@ -158,13 +149,17 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var req service.UpdateUserReq
+	var req UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	updatedUser, err := h.userService.UpdateUserByID(id, req)
+	updatedUser, err := h.userService.UpdateUserByID(id, service.UpdateUserReq{
+	FullName: req.FullName,
+	Phone:    req.Phone,
+    })
+
 	if err != nil {
 		if err.Error() == "user not found" {
 			c.IndentedJSON(http.StatusNotFound, gin.H{"error": "user not found"})
@@ -184,8 +179,10 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 // @Produce json
 // @Param id path string true "User ID"
 // @Success 200 {object} map[string]string
-// @Router /api/v1/users/{id} [delete]
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Security ApiKeyAuth
+// @Router /api/v1/users/{id} [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -202,23 +199,19 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
 }
 
-// LoginUser godoc
+// Login godoc
 // @Summary User login
 // @Description Login with email and password, returns JWT token
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param credentials body struct{Email string; Password string} true "Credentials"
+// @Param credentials body http.LoginRequest true "Login credentials"
 // @Success 200 {object} map[string]string
-// @Failure 400 {object} http.ErrorResponse
-// @Failure 401 {object} http.ErrorResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
 // @Router /api/v1/auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
-	var req struct {
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required"`
-	}
-
+	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
