@@ -6,8 +6,8 @@ import (
     "time"
     "golang.org/x/crypto/bcrypt"
 
-    "github.com/Nziza21/user-service/internal/cache"
-    "github.com/Nziza21/user-service/internal/repository"
+    "github.com/Nziza21/user-service/internal/store/cache"
+    "github.com/Nziza21/user-service/internal/store/repository"
 )
 
 type AuthService struct {
@@ -23,8 +23,8 @@ func NewAuthService(userRepo *repository.UserRepository, redisClient *cache.Redi
 }
 
 func (a *AuthService) GenerateOTP() string {
-    rand.Seed(time.Now().UnixNano())
-    return fmt.Sprintf("%06d", rand.Intn(1000000))
+    r := rand.New(rand.NewSource(time.Now().UnixNano())) // Generates different tokens on different calls
+    return fmt.Sprintf("%06d", r.Intn(1000000))
 }
 
 func (a *AuthService) SaveOTP(userEmail, otp string) error {

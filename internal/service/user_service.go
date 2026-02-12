@@ -1,8 +1,8 @@
 package service
 
 import (
-    "github.com/Nziza21/user-service/internal/domain"
-    "github.com/Nziza21/user-service/internal/repository"
+    "github.com/Nziza21/user-service/internal/Entities"
+    "github.com/Nziza21/user-service/internal/store/repository"
     "golang.org/x/crypto/bcrypt"
     "github.com/google/uuid"
 )
@@ -62,7 +62,7 @@ func (s *UserService) DeleteUser(user *domain.User) error {
 }
 
 func (s *UserService) ListUsers(opts repository.ListUsersOpts) ([]domain.User, error) {
-    return s.repo.ListUsers(opts)
+    return s.repo.ListUsers(opts) // user filters
 }
 
 func (s *UserService) DeleteUserByID(id uuid.UUID) error {
