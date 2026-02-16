@@ -1,4 +1,4 @@
-package domain
+package Entities
 
 type ListUsersOpts struct {
     ID       string

@@ -1,4 +1,4 @@
-package domain
+package Entities
 
 import (
 	"time"

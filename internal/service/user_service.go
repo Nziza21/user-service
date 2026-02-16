@@ -20,7 +20,7 @@ func NewUserService(repo *repository.UserRepository) *UserService {
     return &UserService{repo: repo}
 }
 
-func (s *UserService) CreateUser(user *domain.User, password string) error {
+func (s *UserService) CreateUser(user *Entities.User, password string) error {
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
     if err != nil {
         return err
@@ -29,15 +29,15 @@ func (s *UserService) CreateUser(user *domain.User, password string) error {
     return s.repo.CreateUser(user)
 }
 
-func (s *UserService) GetUserByID(id uuid.UUID) (*domain.User, error) {
+func (s *UserService) GetUserByID(id uuid.UUID) (*Entities.User, error) {
     return s.repo.GetUserByID(id)
 }
 
-func (s *UserService) UpdateUser(user *domain.User) error {
+func (s *UserService) UpdateUser(user *Entities.User) error {
     return s.repo.UpdateUser(user)
 }
 
-func (s *UserService) UpdateUserByID(id uuid.UUID, req UpdateUserReq) (*domain.User, error) {
+func (s *UserService) UpdateUserByID(id uuid.UUID, req UpdateUserReq) (*Entities.User, error) {
     user, err := s.repo.GetUserByID(id)
     if err != nil {
         return nil, err
@@ -57,11 +57,11 @@ func (s *UserService) UpdateUserByID(id uuid.UUID, req UpdateUserReq) (*domain.U
     return user, nil
 }
 
-func (s *UserService) DeleteUser(user *domain.User) error {
+func (s *UserService) DeleteUser(user *Entities.User) error {
     return s.repo.DeleteUser(user)
 }
 
-func (s *UserService) ListUsers(opts repository.ListUsersOpts) ([]domain.User, error) {
+func (s *UserService) ListUsers(opts repository.ListUsersOpts) ([]Entities.User, error) {
     return s.repo.ListUsers(opts) // user filters
 }
 
@@ -74,10 +74,10 @@ func (s *UserService) DeleteUserByID(id uuid.UUID) error {
     return s.repo.DeleteUser(user)
 }
 
-func (s *UserService) GetUserByEmail(email string) (*domain.User, error) {
+func (s *UserService) GetUserByEmail(email string) (*Entities.User, error) {
     return s.repo.GetByEmail(email) 
 }
 
-func (s *UserService) CheckPassword(user *domain.User, password string) bool {
+func (s *UserService) CheckPassword(user *Entities.User, password string) bool {
     return bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) == nil
 }

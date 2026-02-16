@@ -29,8 +29,8 @@ func NewUserHandler(s *service.UserService) *UserHandler {
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param user body http.CreateUserRequest true "User Data"
-// @Success 201 {object} domain.User
+// @Param user body handler.CreateUserRequest true "User Data"
+// @Success 201 {object} Entities.User
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/users [post]
@@ -41,7 +41,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user := &domain.User{
+	user := &Entities.User{
 		FullName: req.FullName,
 		Email:    req.Email,
 		Phone:    req.Phone,
@@ -62,7 +62,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Tags Users
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} domain.User
+// @Success 200 {object} Entities.User
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -75,13 +75,13 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.GetUserByID(id) // calls service to get user from DB
+	user, err := h.userService.GetUserByID(id)
 	if err != nil {
 		handleError(c, "user not found", err)
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, user) // if successful, request data returned
+	c.IndentedJSON(http.StatusOK, user) 
 }
 
 func handleError(c *gin.Context, message string, err error) {
@@ -101,10 +101,10 @@ func handleError(c *gin.Context, message string, err error) {
 // @Param status query string false "Filter by status"
 // @Param page query int false "Page number"
 // @Param limit query int false "Page size limit"
-// @Success 200 {array} domain.User
+// @Success 200 {array} Entities.User
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Security ApiKeyAuth
+// @Security BearerAuth
 // @Router /api/v1/users [get]
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	opts := repository.ListUsersOpts{
@@ -139,8 +139,8 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "User ID"
-// @Param user body http.UpdateProfileRequest true "Updated User Data"
-// @Success 200 {object} domain.User
+// @Param user body handler.UpdateProfileRequest true "Updated User Data"
+// @Success 200 {object} Entities.User
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -185,7 +185,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Security ApiKeyAuth
+// @Security BearerAuth
 // @Router /api/v1/users/{id} [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	idParam := c.Param("id")
@@ -209,7 +209,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param credentials body http.LoginRequest true "Login credentials"
+// @Param credentials body handler.LoginRequest true "Login credentials"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string

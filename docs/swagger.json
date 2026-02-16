@@ -1,7 +1,10 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "user-service",
+        "title": "USER-SERVICE",
+        "contact": {},
+        "version": "1.2"
     },
     "paths": {
         "/api/v1/auth/login": {
@@ -24,7 +27,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.LoginRequest"
+                            "$ref": "#/definitions/handler.LoginRequest"
                         }
                     }
                 ],
@@ -63,7 +66,7 @@
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Retrieve a list of all users (admin only)",
@@ -130,7 +133,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.User"
+                                "$ref": "#/definitions/Entities.User"
                             }
                         }
                     },
@@ -173,7 +176,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CreateUserRequest"
+                            "$ref": "#/definitions/handler.CreateUserRequest"
                         }
                     }
                 ],
@@ -181,7 +184,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/Entities.User"
                         }
                     },
                     "400": {
@@ -228,7 +231,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/Entities.User"
                         }
                     },
                     "400": {
@@ -263,7 +266,7 @@
             "delete": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Delete a user by user ID (admin only)",
@@ -339,7 +342,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UpdateProfileRequest"
+                            "$ref": "#/definitions/handler.UpdateProfileRequest"
                         }
                     }
                 ],
@@ -347,7 +350,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/Entities.User"
                         }
                     },
                     "400": {
@@ -382,7 +385,7 @@
         }
     },
     "definitions": {
-        "domain.User": {
+        "Entities.User": {
             "type": "object",
             "required": [
                 "email",
@@ -403,8 +406,7 @@
                     "type": "string"
                 },
                 "phone": {
-                    "type": "string",
-                    "minLength": 10
+                    "type": "string"
                 },
                 "role": {
                     "type": "string",
@@ -425,7 +427,7 @@
                 }
             }
         },
-        "http.CreateUserRequest": {
+        "handler.CreateUserRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -450,7 +452,7 @@
                 }
             }
         },
-        "http.LoginRequest": {
+        "handler.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -465,7 +467,7 @@
                 }
             }
         },
-        "http.UpdateProfileRequest": {
+        "handler.UpdateProfileRequest": {
             "type": "object",
             "properties": {
                 "fullName": {
@@ -475,6 +477,13 @@
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

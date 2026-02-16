@@ -26,27 +26,27 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
     return &UserRepository{db: db}
 }
 
-func (r *UserRepository) CreateUser(user *domain.User) error {
+func (r *UserRepository) CreateUser(user *Entities.User) error {
     return r.db.Create(user).Error
 }
 
-func (r *UserRepository) GetUserByID(id uuid.UUID) (*domain.User, error) {
-    var user domain.User
+func (r *UserRepository) GetUserByID(id uuid.UUID) (*Entities.User, error) {
+    var user Entities.User
     result := r.db.First(&user, "id = ?", id)
     return &user, result.Error
 }
 
-func (r *UserRepository) UpdateUser(user *domain.User) error {
+func (r *UserRepository) UpdateUser(user *Entities.User) error {
     return r.db.Save(user).Error
 }
 
-func (r *UserRepository) DeleteUser(user *domain.User) error {
+func (r *UserRepository) DeleteUser(user *Entities.User) error {
     return r.db.Delete(user).Error
 }
 
-func (r *UserRepository) ListUsers(opts ListUsersOpts) ([]domain.User, error) {
-    var users []domain.User
-    query := r.db.Model(&domain.User{}) // Gets users from DB using filters
+func (r *UserRepository) ListUsers(opts ListUsersOpts) ([]Entities.User, error) {
+    var users []Entities.User
+    query := r.db.Model(&Entities.User{}) // Gets users from DB using filters
 
     if opts.ID != "" {
         query = query.Where("id = ?", opts.ID)
@@ -95,8 +95,8 @@ func (r *UserRepository) ListUsers(opts ListUsersOpts) ([]domain.User, error) {
     return users, err
 }
 
-func (r *UserRepository) GetByEmail(email string) (*domain.User, error) {
-    var user domain.User
+func (r *UserRepository) GetByEmail(email string) (*Entities.User, error) {
+    var user Entities.User
     if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
         return nil, err
     }
@@ -104,7 +104,7 @@ func (r *UserRepository) GetByEmail(email string) (*domain.User, error) {
 }
 
 func (r *UserRepository) UpdatePassword(email, hashedPassword string) error {
-    user := &domain.User{}
+    user := &Entities.User{}
     if err := r.db.Where("email = ?", email).First(user).Error; err != nil {
         return err
     }

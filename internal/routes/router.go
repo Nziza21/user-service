@@ -1,24 +1,23 @@
-package router
+package routes
 
 import (
+
+	"github.com/Nziza21/user-service/handler"
 	"github.com/gin-gonic/gin"
-	 "github.com/Nziza21/user-service/handler"
+
 )
 
-func SetupRouter(userHandler *handler.UserHandler) *gin.Engine {
+
+func SetupRouter(userHandler *handler.UserHandler, authHandler *handler.AuthHandler, jwtSecret []byte) *gin.Engine {
 	r := gin.Default()
 
 	api := r.Group("/api/v1")
-	{
 
-		api.POST("/login", userHandler.Login)
+	// Auth routes
+	setupAuthRoutes(api, userHandler, authHandler)  
 
-		api.POST("/users", userHandler.CreateUser)
-		api.GET("/users", userHandler.ListUsers)
-		api.GET("/users/:id", userHandler.GetUserByID)
-		api.PATCH("/users/:id", userHandler.UpdateUser)
-		api.DELETE("/users/:id", userHandler.DeleteUser)
-	}
+	// User routes
+	setupUserRoutes(api, userHandler, jwtSecret)
 
 	return r
 }
