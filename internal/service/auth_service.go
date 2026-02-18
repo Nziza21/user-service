@@ -4,8 +4,10 @@ import (
     "fmt"
     "math/rand"
     "time"
+    "errors"
+    "github.com/redis/go-redis/v9"
     "golang.org/x/crypto/bcrypt"
-
+    "strconv"
     "github.com/Nziza21/user-service/internal/store/cache"
     "github.com/Nziza21/user-service/internal/store/repository"
 )
@@ -45,4 +47,33 @@ func (a *AuthService) ValidateOTP(userEmail, otp string) bool {
 func hashPassword(password string) string {
     hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
     return string(hashed)
+}
+
+func (a *AuthService) CheckOTPRequestLimit(email string) (bool, error) {
+    key := fmt.Sprintf("otp_req_limit:%s", email)
+
+    countStr, err := a.RedisClient.Get(key)
+    if err != nil {
+        if errors.Is(err, redis.Nil) {
+            // First request
+            if err := a.RedisClient.Set(key, "1", 10*time.Minute); err != nil {
+                return false, err
+            }
+            return true, nil
+        }
+        return false, err
+    }
+
+    count, _ := strconv.Atoi(countStr)
+
+    if count >= 3 {
+        return false, nil
+    }
+
+    count++
+    if err := a.RedisClient.Set(key, strconv.Itoa(count), 10*time.Minute); err != nil {
+        return false, err
+    }
+
+    return true, nil
 }

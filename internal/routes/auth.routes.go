@@ -8,7 +8,6 @@ import (
 func setupAuthRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, authHandler *handler.AuthHandler) {
 	auth := api.Group("/auth")
 	auth.POST("/login", userHandler.Login)
-	auth.POST("/request-reset", authHandler.RequestResetPassword)
+	auth.POST("/request-reset-password", authHandler.RequestResetPassword)
 	auth.POST("/reset-password", authHandler.ResetPassword)
 }
-

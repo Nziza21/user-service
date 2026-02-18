@@ -21,6 +21,7 @@ type Config struct {
 	Port       string
 	DB_DSN     string
 	SMTPConfig *SMTPConfig
+	JWTSecret  string
 }
 
 func LoadConfig() *Config {
@@ -28,6 +29,11 @@ func LoadConfig() *Config {
 	if err != nil {
 		log.Println(".env file not found, relying on OS environment variables")
 	}
+
+    jwtSecret := os.Getenv("JWT_SECRET")
+    if jwtSecret == "" {
+        log.Fatal("JWT_SECRET environment variable is required")
+    }
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -56,8 +62,10 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		Port:       port,
-		DB_DSN:     dbDSN,
-		SMTPConfig: smtpConfig,
-	}
+    Port:       port,
+    DB_DSN:     dbDSN,
+    SMTPConfig: smtpConfig,
+    JWTSecret:  jwtSecret,
+    }
+
 } 

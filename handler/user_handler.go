@@ -12,15 +12,15 @@ import (
 	"github.com/google/uuid"
 )
 
-var jwtSecret = []byte("mysecretpassword")
-
 type UserHandler struct {
-	userService *service.UserService
+    userService *service.UserService
+    jwtSecret   []byte
 }
 
+
 // Constructor
-func NewUserHandler(s *service.UserService) *UserHandler {
-	return &UserHandler{userService: s}
+func NewUserHandler(s *service.UserService, jwtSecret []byte) *UserHandler {
+    return &UserHandler{userService: s, jwtSecret: jwtSecret}
 }
 
 // CreateUser godoc
@@ -80,8 +80,11 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		handleError(c, "user not found", err)
 		return
 	}
+c.IndentedJSON(http.StatusOK, gin.H{
+    "user":   user,
+    "status": http.StatusOK,
+})
 
-	c.IndentedJSON(http.StatusOK, user) 
 }
 
 func handleError(c *gin.Context, message string, err error) {
@@ -204,7 +207,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 }
 
 // Login godoc
-// @Summary User login
+// @Summary Login
 // @Description Login with email and password, returns JWT token
 // @Tags Auth
 // @Accept json
@@ -231,7 +234,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		"user_id": user.ID.String(),
 		"role":    user.Role,
 	})
-	tokenString, _ := token.SignedString(jwtSecret)
+	tokenString, _ := token.SignedString(h.jwtSecret)
 
 	c.IndentedJSON(http.StatusOK, gin.H{"token": tokenString})
 }

@@ -55,6 +55,26 @@ definitions:
     - email
     - password
     type: object
+  handler.RequestResetPasswordInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  handler.ResetPasswordInput:
+    properties:
+      email:
+        type: string
+      new_password:
+        type: string
+      otp:
+        type: string
+    required:
+    - email
+    - new_password
+    - otp
+    type: object
   handler.UpdateProfileRequest:
     properties:
       fullName:
@@ -101,7 +121,97 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: User login
+      summary: Login
+      tags:
+      - Auth
+  /api/v1/auth/request-reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Sends a one-time OTP to the user's email for password reset
+      parameters:
+      - description: Email of the user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RequestResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP sent to email
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "429":
+          description: Too many requests
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Request a password reset OTP
+      tags:
+      - Auth
+  /api/v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Validate OTP and update the user's password
+      parameters:
+      - description: Email, OTP, New Password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset successful
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized - invalid or expired OTP
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Reset password
       tags:
       - Auth
   /api/v1/users:

@@ -17,8 +17,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-var jwtSecret = []byte("mysecretpassword")
-
 //	@title						USER-SERVICE
 //	@description				user-service
 //	@version					1.2
@@ -26,27 +24,31 @@ var jwtSecret = []byte("mysecretpassword")
 //	@in							header
 //	@name						Authorization
 func main() {
-	cfg := config.LoadConfig()
+	
+    cfg := config.LoadConfig()
+    jwtSecret := []byte(cfg.JWTSecret) 
 
-	redisClient := cache.NewRedisClient("localhost:6379", "", 0)
-	database := db.ConnectDB(cfg.DB_DSN)
-	log.Println("Database connected:", database != nil)
+    redisClient := cache.NewRedisClient("localhost:6379", "", 0)
+    database := db.ConnectDB(cfg.DB_DSN)
+    log.Println("Database connected:", database != nil)
 
-	userRepo := repository.NewUserRepository(database)
-	userService := service.NewUserService(userRepo)
-	userHandler := myhttp.NewUserHandler(userService)
-	authService := service.NewAuthService(userRepo, redisClient)
-	emailService := service.NewSMTPEmailService()
-	authHandler := myhttp.NewAuthHandler(authService, emailService)
+    userRepo := repository.NewUserRepository(database)
+    userService := service.NewUserService(userRepo)
+    
+    userHandler := myhttp.NewUserHandler(userService, jwtSecret) 
+    authService := service.NewAuthService(userRepo, redisClient)
+    emailService := service.NewSMTPEmailService()
+    authHandler := myhttp.NewAuthHandler(authService, emailService)
 
-	r := router.SetupRouter(userHandler, authHandler, jwtSecret)
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.GET("/docs", func(c *gin.Context) { 
-		c.Redirect(http.StatusMovedPermanently, "/docs/index.html")
-	})
-	// API v1
-	log.Println("Starting server on port", cfg.Port)
-	if err := r.Run(":" + cfg.Port); err != nil {
-		log.Fatal("Failed to start server:", err)
-	}
+    r := router.SetupRouter(userHandler, authHandler, jwtSecret) 
+
+    r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+    r.GET("/docs", func(c *gin.Context) { 
+        c.Redirect(http.StatusMovedPermanently, "/docs/index.html")
+    })
+
+    log.Println("Starting server on port", cfg.Port)
+    if err := r.Run(":" + cfg.Port); err != nil {
+        log.Fatal("Failed to start server:", err)
+    }
 }

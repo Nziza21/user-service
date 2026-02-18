@@ -17,3 +17,13 @@ type LoginRequest struct {
     Email    string `json:"email" binding:"required,email"`
     Password string `json:"password" binding:"required"`
 }
+
+type RequestResetPasswordInput struct {
+    Email string `json:"email" binding:"required,email"`
+}
+
+type ResetPasswordInput struct {
+    Email       string `json:"email" binding:"required,email"`
+    OTP         string `json:"otp" binding:"required"`
+    NewPassword string `json:"new_password" binding:"required"`
+}
