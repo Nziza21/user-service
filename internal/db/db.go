@@ -1,16 +1,21 @@
 package db
 
 import (
-    "log"
+	"log"
+	"time"
 
-    "gorm.io/driver/postgres"
-    "gorm.io/gorm"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func ConnectDB(dbURL string) *gorm.DB {
-    db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
-    if err != nil {
-        log.Fatal("Failed to connect to database:", err)
-    }
-    return db
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
+		NowFunc: func() time.Time {
+			return time.Now().UTC()
+		},
+	})
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+	return db
 }

@@ -17,8 +17,6 @@ type UserHandler struct {
     jwtSecret   []byte
 }
 
-
-// Constructor
 func NewUserHandler(s *service.UserService, jwtSecret []byte) *UserHandler {
     return &UserHandler{userService: s, jwtSecret: jwtSecret}
 }
@@ -71,24 +69,22 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		handleError(c, "invalid user ID", err)
-		return
-	}
+    handleError(c, http.StatusBadRequest, "invalid user ID", err)
+    return
+    }
 
 	user, err := h.userService.GetUserByID(id)
 	if err != nil {
-		handleError(c, "user not found", err)
-		return
-	}
-c.IndentedJSON(http.StatusOK, gin.H{
-    "user":   user,
-    "status": http.StatusOK,
-})
+    handleError(c, http.StatusNotFound, "user not found", err)
+    return
+    }
+
+    c.IndentedJSON(http.StatusOK, user)
 
 }
 
-func handleError(c *gin.Context, message string, err error) {
-	c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": message, "details": err.Error()})
+func handleError(c *gin.Context, status int, message string, err error) {
+    c.IndentedJSON(status, gin.H{"error": message, "details": err.Error()})
 }
 
 // ListUsers godoc
@@ -120,11 +116,21 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	}
 
 	if page := c.Query("page"); page != "" {
-		opts.Page, _ = strconv.Atoi(page)
-	}
-	if limit := c.Query("limit"); limit != "" {
-		opts.Limit, _ = strconv.Atoi(limit)
-	}
+    if parsed, err := strconv.Atoi(page); err == nil {
+        opts.Page = parsed
+    } else {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid page number"})
+        return
+    }
+}
+    if limit := c.Query("limit"); limit != "" {
+    if parsed, err := strconv.Atoi(limit); err == nil {
+        opts.Limit = parsed
+    } else {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid limit number"})
+        return
+    }
+}
 
 	users, err := h.userService.ListUsers(opts)
 	if err != nil {

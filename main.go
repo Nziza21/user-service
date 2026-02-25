@@ -28,7 +28,7 @@ func main() {
     cfg := config.LoadConfig()
     jwtSecret := []byte(cfg.JWTSecret) 
 
-    redisClient := cache.NewRedisClient("localhost:6379", "", 0)
+    redisClient := cache.NewRedisClient(cfg.RedisAddr, cfg.RedisPassword, cfg.RedisDB)
     database := db.ConnectDB(cfg.DB_DSN)
     log.Println("Database connected:", database != nil)
 

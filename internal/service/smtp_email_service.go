@@ -25,11 +25,11 @@ func (s *SMTPEmailService) SendEmail(to, subject, body string) error {
 	}
 
 	msg := []byte(
-	"From: " + from + "\r\n" +
-		"To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"Content-Type: text/html; charset=UTF-8\r\n" + // <-- this line is key
-		"\r\n" + body + "\r\n",
+		"From: " + from + "\r\n" +
+			"To: " + to + "\r\n" +
+			"Subject: " + subject + "\r\n" +
+			"Content-Type: text/html; charset=UTF-8\r\n" +
+			"\r\n" + body + "\r\n",
 	)
 
 	auth := smtp.PlainAuth("", username, password, host)
@@ -45,8 +45,7 @@ func (s *SMTPEmailService) SendEmail(to, subject, body string) error {
 
 func (s *SMTPEmailService) SendOTPEmail(to, otp string) error {
 	subject := "Reset Password OTP"
-	
-	// HTML body
+
 	body := fmt.Sprintf(`
 		<html>
 		<head>
