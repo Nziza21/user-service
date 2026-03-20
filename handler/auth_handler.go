@@ -36,10 +36,7 @@ func NewAuthHandler(
 // @Failure      429 {object} map[string]string "Too many requests"
 // @Router       /api/v1/auth/request-reset-password [post]
 func (h *AuthHandler) RequestResetPassword(c *gin.Context) {
-	var req struct {
-		Email string `json:"email" binding:"required,email"`
-	}
-
+	var req RequestResetPasswordInput
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid request payload",
@@ -107,22 +104,22 @@ func (h *AuthHandler) RequestResetPassword(c *gin.Context) {
 // @Failure      404 {object} map[string]string "User not found"
 // @Failure      500 {object} map[string]string "Internal server error"
 // @Router       /api/v1/auth/reset-password [post]
-func (h *AuthHandler) ResetPassword(c *gin.Context) {
-    var req ResetPasswordInput
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+func (h *AuthHandler) ResetPassword(c *gin.Context) { 
+	var req ResetPasswordInput 
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	} 
 
-    if !h.authService.ValidateOTP(req.Email, req.OTP) {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired OTP"})
-        return
-    }
+	if !h.authService.ValidateOTP(req.Email, req.OTP) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired OTP"})
+		return
+	}
 
-    if err := h.authService.ResetPassword(req.Email, req.NewPassword); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "password reset failed"})
-        return
-    }
+	if err := h.authService.ResetPassword(req.Email, req.NewPassword); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "password reset failed"})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"message": "password reset successful"})
+	c.JSON(http.StatusOK, gin.H{"message": "password reset successful"})
 }

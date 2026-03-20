@@ -15,7 +15,7 @@ type UpdateProfileRequest struct {
 
 type LoginRequest struct {
     Email    string `json:"email" binding:"required,email"`
-    Password string `json:"password" binding:"required"`
+    Password string `json:"password" binding:"required"` 
 }
 
 type RequestResetPasswordInput struct {
@@ -26,4 +26,19 @@ type ResetPasswordInput struct {
     Email       string `json:"email" binding:"required,email"`
     OTP         string `json:"otp" binding:"required"`
     NewPassword string `json:"new_password" binding:"required"`
+}
+
+type CreateProductRequest struct {
+    Name        string  `json:"name" binding:"required"`
+    Description string  `json:"description"`
+    Price       float64 `json:"price" binding:"required"`
+    Stock       int     `json:"stock" binding:"required"`
+}
+
+type ProductResponse struct {
+    ID          string  `json:"id"`
+    Name        string  `json:"name"`
+    Description string  `json:"description"`
+    Price       float64 `json:"price"`
+    Stock       int     `json:"stock"`
 }

@@ -1,24 +1,25 @@
 package handler
 
 import (
+	"net/http"
 	"strconv"
-    "net/http"
+
 	"github.com/Nziza21/user-service/internal/Entities"
 	"github.com/Nziza21/user-service/internal/service"
 	"github.com/Nziza21/user-service/internal/store/repository"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
 
 type UserHandler struct {
-    userService *service.UserService
-    jwtSecret   []byte
+	userService *service.UserService
+	jwtSecret   []byte
 }
 
 func NewUserHandler(s *service.UserService, jwtSecret []byte) *UserHandler {
-    return &UserHandler{userService: s, jwtSecret: jwtSecret}
+	return &UserHandler{userService: s, jwtSecret: jwtSecret}
 }
 
 // CreateUser godoc
@@ -69,22 +70,22 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-    handleError(c, http.StatusBadRequest, "invalid user ID", err)
-    return
-    }
+		handleError(c, http.StatusBadRequest, "invalid user ID", err)
+		return
+	}
 
 	user, err := h.userService.GetUserByID(id)
 	if err != nil {
-    handleError(c, http.StatusNotFound, "user not found", err)
-    return
-    }
+		handleError(c, http.StatusNotFound, "user not found", err)
+		return
+	}
 
-    c.IndentedJSON(http.StatusOK, user)
+	c.IndentedJSON(http.StatusOK, user)
 
 }
 
-func handleError(c *gin.Context, status int, message string, err error) {
-    c.IndentedJSON(status, gin.H{"error": message, "details": err.Error()})
+func handleError(c *gin.Context, status int, message string, err error) { // error struct format
+	c.IndentedJSON(status, gin.H{"error": message, "details": err.Error()}) // "details" are errors that came from service, DB, Gorm...
 }
 
 // ListUsers godoc
@@ -106,7 +107,7 @@ func handleError(c *gin.Context, status int, message string, err error) {
 // @Security BearerAuth
 // @Router /api/v1/users [get]
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	opts := repository.ListUsersOpts{
+	opts := repository.ListUsersOpts{ // filters
 		ID:       c.Query("id"),
 		FullName: c.Query("full_name"),
 		Email:    c.Query("email"),
@@ -116,21 +117,21 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	}
 
 	if page := c.Query("page"); page != "" {
-    if parsed, err := strconv.Atoi(page); err == nil {
-        opts.Page = parsed
-    } else {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid page number"})
-        return
-    }
-}
-    if limit := c.Query("limit"); limit != "" {
-    if parsed, err := strconv.Atoi(limit); err == nil {
-        opts.Limit = parsed
-    } else {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid limit number"})
-        return
-    }
-}
+		if parsed, err := strconv.Atoi(page); err == nil {
+			opts.Page = parsed
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid page number"})
+			return
+		}
+	}
+	if limit := c.Query("limit"); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			opts.Limit = parsed
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid limit number"})
+			return
+		}
+	}
 
 	users, err := h.userService.ListUsers(opts)
 	if err != nil {
@@ -182,7 +183,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, updatedUser)
+	c.IndentedJSON(http.StatusOK, updatedUser) 
 }
 
 // DeleteUser godoc
@@ -231,7 +232,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	user, err := h.userService.GetUserByEmail(req.Email)
-	if err != nil || !h.userService.CheckPassword(user, req.Password) {
+	if err != nil || !h.userService.CheckPassword(user, req.Password) { // (||) ensures CheckPassword is never called with a nil user.
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}

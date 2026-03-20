@@ -8,16 +8,18 @@ import (
 )
 
 
-func SetupRouter(userHandler *handler.UserHandler, authHandler *handler.AuthHandler, jwtSecret []byte) *gin.Engine {
-	r := gin.Default()
+func SetupRouter(
+    userHandler *handler.UserHandler,
+    authHandler *handler.AuthHandler,
+    productHandler *handler.ProductHandler,
+    jwtSecret []byte,
+) *gin.Engine {
+    r := gin.Default()
+    api := r.Group("/api/v1")
 
-	api := r.Group("/api/v1")
+    setupAuthRoutes(api, userHandler, authHandler)
+    setupUserRoutes(api, userHandler, jwtSecret)
+    setupProductRoutes(api, productHandler) 
 
-	// Auth routes
-	setupAuthRoutes(api, userHandler, authHandler)  
-
-	// User routes
-	setupUserRoutes(api, userHandler, jwtSecret)
-
-	return r
+    return r
 }

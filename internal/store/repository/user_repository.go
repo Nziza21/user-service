@@ -34,7 +34,13 @@ func (r *UserRepository) CreateUser(user *Entities.User) error {
 func (r *UserRepository) GetUserByID(id uuid.UUID) (*Entities.User, error) {
 	var user Entities.User
 	result := r.db.First(&user, "id = ?", id)
-	return &user, result.Error
+	if result.Error != nil {
+    if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+        return nil, errors.New("user not found")
+    }
+	return nil, result.Error
+    }
+    return &user, nil
 }
 
 
@@ -49,7 +55,7 @@ func (r *UserRepository) DeleteUser(user *Entities.User) error {
 
 func (r *UserRepository) ListUsers(opts ListUsersOpts) ([]Entities.User, error) {
 	var users []Entities.User
-	query := r.db.Model(&Entities.User{}) // Gets users from DB using filters
+	query := r.db.Model(&Entities.User{}) // Gets users from DB from users table
 
 	if opts.ID != "" {
 		query = query.Where("id = ?", opts.ID)

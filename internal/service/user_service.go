@@ -43,18 +43,18 @@ func (s *UserService) UpdateUserByID(id uuid.UUID, req UpdateUserReq) (*Entities
         return nil, err
     }
 
-    if req.FullName != "" {
+    if req.FullName != "" { // If the request was filled, insert in the user object
         user.FullName = req.FullName
     }
     if req.Phone != "" {
         user.Phone = req.Phone
     }
 
-    if err := s.repo.UpdateUser(user); err != nil {
+    if err := s.repo.UpdateUser(user); err != nil { // Saves the updated user to the database
         return nil, err
     }
 
-    return user, nil
+    return user, nil // returns the fully updated user object 
 }
 
 func (s *UserService) DeleteUser(user *Entities.User) error {
@@ -79,5 +79,5 @@ func (s *UserService) GetUserByEmail(email string) (*Entities.User, error) {
 }
 
 func (s *UserService) CheckPassword(user *Entities.User, password string) bool {
-    return bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) == nil
+    return bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) == nil // return True or False(bool)
 }

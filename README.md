@@ -3,7 +3,7 @@
 ## Author
 
 **Nziza Samuel**  
-Email: nzizataylora@gmail.com  
+Email: nzizataylor@gmail.com  
 
 ## User Service API
 

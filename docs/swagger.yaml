@@ -28,6 +28,21 @@ definitions:
     - email
     - fullName
     type: object
+  handler.CreateProductRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+    required:
+    - name
+    - price
+    - stock
+    type: object
   handler.CreateUserRequest:
     properties:
       email:
@@ -54,6 +69,19 @@ definitions:
     required:
     - email
     - password
+    type: object
+  handler.ProductResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
     type: object
   handler.RequestResetPasswordInput:
     properties:
@@ -214,6 +242,48 @@ paths:
       summary: Reset password
       tags:
       - Auth
+  /api/v1/products:
+    get:
+      description: Get a list of all products
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.ProductResponse'
+            type: array
+      summary: List all products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a product with name, description, price, and stock
+      parameters:
+      - description: Product Info
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.ProductResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new product
+      tags:
+      - products
   /api/v1/users:
     get:
       description: Retrieve a list of all users (admin only)

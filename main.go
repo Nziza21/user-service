@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/Nziza21/user-service/docs"
 	myhttp "github.com/Nziza21/user-service/handler"
+	"github.com/Nziza21/user-service/internal/Entities"
 	"github.com/Nziza21/user-service/internal/db"
 	router "github.com/Nziza21/user-service/internal/routes"
 	"github.com/Nziza21/user-service/internal/service"
@@ -17,38 +18,51 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//	@title						USER-SERVICE
-//	@description				user-service
-//	@version					1.2
-//	@securityDefinitions.apikey	BearerAuth
-//	@in							header
-//	@name						Authorization
+// @title                       USER-SERVICE
+// @description             user-service
+// @version                 1.2
+// @securityDefinitions.apikey  BearerAuth
+// @in                          header
+// @name                        Authorization
 func main() {
-	
-    cfg := config.LoadConfig()
-    jwtSecret := []byte(cfg.JWTSecret) 
 
-    redisClient := cache.NewRedisClient(cfg.RedisAddr, cfg.RedisPassword, cfg.RedisDB)
-    database := db.ConnectDB(cfg.DB_DSN)
-    log.Println("Database connected:", database != nil)
+	cfg := config.LoadConfig()
+	jwtSecret := []byte(cfg.JWTSecret)
 
-    userRepo := repository.NewUserRepository(database)
-    userService := service.NewUserService(userRepo)
-    
-    userHandler := myhttp.NewUserHandler(userService, jwtSecret) 
-    authService := service.NewAuthService(userRepo, redisClient)
-    emailService := service.NewSMTPEmailService()
-    authHandler := myhttp.NewAuthHandler(authService, emailService)
+	redisClient := cache.NewRedisClient(cfg.RedisAddr, cfg.RedisPassword, cfg.RedisDB)
+	database := db.ConnectDB(cfg.DB_DSN)
 
-    r := router.SetupRouter(userHandler, authHandler, jwtSecret) 
+	if err := database.AutoMigrate(
+		&Entities.User{},
+		&Entities.Product{},
+		&Entities.Order{},
+		&Entities.OrderItem{}); err != nil {
+		log.Fatal("Migration failed:", err)
+	}
 
-    r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-    r.GET("/docs", func(c *gin.Context) { 
-        c.Redirect(http.StatusMovedPermanently, "/docs/index.html")
-    })
+	log.Println("Database connected:", database != nil)
 
-    log.Println("Starting server on port", cfg.Port)
-    if err := r.Run(":" + cfg.Port); err != nil {
-        log.Fatal("Failed to start server:", err)
-    }
+	userRepo := repository.NewUserRepository(database)
+	userService := service.NewUserService(userRepo)
+
+	userHandler := myhttp.NewUserHandler(userService, jwtSecret)
+	authService := service.NewAuthService(userRepo, redisClient)
+	emailService := service.NewSMTPEmailService()
+	authHandler := myhttp.NewAuthHandler(authService, emailService)
+
+	productRepo := repository.NewProductRepository(database)
+	productService := service.NewProductService(productRepo)
+	productHandler := myhttp.NewProductHandler(productService)
+
+	r := router.SetupRouter(userHandler, authHandler, productHandler, jwtSecret)
+
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/docs", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/docs/index.html")
+	})
+
+	log.Println("Starting server on port", cfg.Port)
+	if err := r.Run(":" + cfg.Port); err != nil {
+		log.Fatal("Failed to start server1:", err)
+	}
 }

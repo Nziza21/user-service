@@ -40,7 +40,7 @@ func LoadConfig() *Config {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8086"
 	}
 
 	dbDSN := os.Getenv("DB_DSN")
